@@ -36,6 +36,8 @@ class Lock{
 };
 struct deleter{
     void operator()(std::mutex* m)const{
+        m->unlock();
+        std::cout<<"mutex unlocked"<<std::endl;
         delete m;
     }
 };
@@ -49,10 +51,6 @@ class SharedLock{
     }
     SharedLock(const SharedLock& sharedLock)=delete;
     SharedLock& operator = (const SharedLock& sharedlock)=delete;
-    ~SharedLock(){
-        ptr->unlock();
-        std::cout<<"mutex unlocked"<<std::endl;
-    }
 };
 int main () {
     Resource *res1 = Resource::createResource();
