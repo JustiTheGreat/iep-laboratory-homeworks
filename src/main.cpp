@@ -34,20 +34,25 @@ class Lock{
         std::cout<<"mutex unlocked"<<std::endl;
     }
 };
+struct deleter{
+    void operator()(std::mutex* m)const{
+        delete m;
+    }
+};
 class SharedLock{
     private:
     std::shared_ptr<std::mutex> ptr;
-    /*void deleter(std::mutex *m){
-        ptr.get()->unlock();
-        std::cout<<"mutex unlocked"<<std::endl;
-    }*/
     public:
-    explicit SharedLock(std::mutex *m):ptr(m/*,deleter*/){
-        /*ptr.get()->lock();*/
+    explicit SharedLock(std::mutex *m):ptr(m,deleter()){
+        ptr.get()->lock();
         std::cout<<"mutex locked"<<std::endl;
     }
     SharedLock(const SharedLock& sharedLock)=delete;
     SharedLock& operator = (const SharedLock& sharedlock)=delete;
+    ~SharedLock(){
+        ptr->unlock();
+        std::cout<<"mutex unlocked"<<std::endl;
+    }
 };
 int main () {
     Resource *res1 = Resource::createResource();
@@ -91,13 +96,14 @@ int main () {
         std::cout<<"-------------"<<std::endl;
     }
     std::cout<<std::endl;
-    std::mutex mutex;
+    std::mutex mutex1;
     {
-        Lock lock(&mutex);
+        Lock lock(&mutex1);
     }
     std::cout<<std::endl;
+    std::mutex mutex2;
     {
-        SharedLock sharedLock(&mutex);
+        SharedLock sharedLock(&mutex2);
     }
     return 0;
 }
